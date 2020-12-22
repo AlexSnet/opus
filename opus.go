@@ -34,3 +34,20 @@ const (
 func Version() string {
 	return C.GoString(C.opus_get_version_string())
 }
+
+func GetFrameType(payload []byte) string {
+	var frameType string
+	switch payload[1]&0x3 {
+	case 0:
+		frameType = "One frame"
+	case 1:
+		frameType = "Two CBR frames"
+	case 2:
+		frameType = "Two VBR frames"
+	case 3:
+		frameType = "Multiple CBR/VBR frames (from 0 to 120 ms)"
+	default:
+	}
+
+	return frameType
+}
