@@ -8,6 +8,23 @@ package opus
 // Link opus using pkg-config.
 #cgo pkg-config: opus
 #include <opus.h>
+
+#define MODE_SILK_ONLY          1000
+#define MODE_HYBRID             1001
+#define MODE_CELT_ONLY          1002
+
+int bridge_decoder_get_packet_mode(const unsigned char *data) {
+   int mode;
+   if (data[0]&0x80) {
+      mode = MODE_CELT_ONLY;
+   } else if ((data[0]&0x60) == 0x60) {
+      mode = MODE_HYBRID;
+   } else {
+      mode = MODE_SILK_ONLY;
+   }
+   return mode;
+}
+
 */
 import "C"
 
@@ -50,4 +67,8 @@ func GetFrameType(payload []byte) string {
 	}
 
 	return frameType
+}
+
+func GetPacketMode(c *C.uchar) int {
+	return int(C.bridge_decoder_get_packet_mode(c))
 }

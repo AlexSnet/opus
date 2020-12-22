@@ -13,24 +13,8 @@ import (
 #cgo pkg-config: opus
 #include <opus.h>
 
-#define MODE_SILK_ONLY          1000
-#define MODE_HYBRID             1001
-#define MODE_CELT_ONLY          1002
-
 int bridge_decoder_get_last_packet_duration(OpusDecoder *st, opus_int32 *samples) {
 	return opus_decoder_ctl(st, OPUS_GET_LAST_PACKET_DURATION(samples));
-}
-
-int bridge_decoder_get_packet_mode(const unsigned char *data) {
-   int mode;
-   if (data[0]&0x80) {
-      mode = MODE_CELT_ONLY;
-   } else if ((data[0]&0x60) == 0x60) {
-      mode = MODE_HYBRID;
-   } else {
-      mode = MODE_SILK_ONLY;
-   }
-   return mode;
 }
 
 */
