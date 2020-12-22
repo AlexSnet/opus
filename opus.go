@@ -69,6 +69,6 @@ func GetFrameType(payload []byte) string {
 	return frameType
 }
 
-func GetPacketMode(c *C.uchar) int {
-	return int(C.bridge_decoder_get_packet_mode(c))
+func GetPacketMode(payload []byte) int {
+	return int(C.bridge_decoder_get_packet_mode((*C.uchar)(&payload[0])))
 }
