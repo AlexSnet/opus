@@ -13,83 +13,86 @@ import (
 #cgo pkg-config: opus
 #include <opus.h>
 
-int
-bridge_encoder_set_dtx(OpusEncoder *st, opus_int32 use_dtx)
-{
+int bridge_encoder_set_dtx(OpusEncoder *st, opus_int32 use_dtx) {
 	return opus_encoder_ctl(st, OPUS_SET_DTX(use_dtx));
 }
 
-int
-bridge_encoder_get_dtx(OpusEncoder *st, opus_int32 *dtx)
-{
+int bridge_encoder_get_dtx(OpusEncoder *st, opus_int32 *dtx) {
 	return opus_encoder_ctl(st, OPUS_GET_DTX(dtx));
 }
 
-int
-bridge_encoder_get_sample_rate(OpusEncoder *st, opus_int32 *sample_rate)
-{
+int bridge_encoder_enable_cbr(OpusEncoder *st) {
+    return opus_encoder_ctl(st, OPUS_SET_VBR(0));
+}
+
+int bridge_encoder_disable_cbr(OpusEncoder *st) {
+    return opus_encoder_ctl(st, OPUS_SET_VBR(1));
+}
+
+int bridge_encoder_get_vbr(OpusEncoder *st, opus_int32 *vbr) {
+	return opus_encoder_ctl(st, OPUS_GET_VBR(vbr));
+}
+
+int bridge_encoder_get_sample_rate(OpusEncoder *st, opus_int32 *sample_rate) {
 	return opus_encoder_ctl(st, OPUS_GET_SAMPLE_RATE(sample_rate));
 }
 
-
-int
-bridge_encoder_set_bitrate(OpusEncoder *st, opus_int32 bitrate)
-{
+int bridge_encoder_set_bitrate(OpusEncoder *st, opus_int32 bitrate) {
 	return opus_encoder_ctl(st, OPUS_SET_BITRATE(bitrate));
 }
 
-int
-bridge_encoder_get_bitrate(OpusEncoder *st, opus_int32 *bitrate)
-{
+int bridge_encoder_get_bitrate(OpusEncoder *st, opus_int32 *bitrate) {
 	return opus_encoder_ctl(st, OPUS_GET_BITRATE(bitrate));
 }
 
-int
-bridge_encoder_set_complexity(OpusEncoder *st, opus_int32 complexity)
-{
+int bridge_encoder_set_complexity(OpusEncoder *st, opus_int32 complexity) {
 	return opus_encoder_ctl(st, OPUS_SET_COMPLEXITY(complexity));
 }
 
-int
-bridge_encoder_get_complexity(OpusEncoder *st, opus_int32 *complexity)
-{
+int bridge_encoder_get_complexity(OpusEncoder *st, opus_int32 *complexity) {
 	return opus_encoder_ctl(st, OPUS_GET_COMPLEXITY(complexity));
 }
 
-int
-bridge_encoder_set_max_bandwidth(OpusEncoder *st, opus_int32 max_bw)
-{
+int bridge_encoder_set_bandwidth(OpusEncoder *st, opus_int32 bandwidth) {
+	return opus_encoder_ctl(st, OPUS_SET_BANDWIDTH(bandwidth));
+}
+
+int bridge_encoder_get_bandwidth(OpusEncoder *st, opus_int32 *bandwidth) {
+	return opus_encoder_ctl(st, OPUS_GET_BANDWIDTH(bandwidth));
+}
+
+int bridge_encoder_set_max_bandwidth(OpusEncoder *st, opus_int32 max_bw) {
 	return opus_encoder_ctl(st, OPUS_SET_MAX_BANDWIDTH(max_bw));
 }
 
-int
-bridge_encoder_get_max_bandwidth(OpusEncoder *st, opus_int32 *max_bw)
-{
+int bridge_encoder_get_max_bandwidth(OpusEncoder *st, opus_int32 *max_bw) {
 	return opus_encoder_ctl(st, OPUS_GET_MAX_BANDWIDTH(max_bw));
 }
 
-int
-bridge_encoder_set_inband_fec(OpusEncoder *st, opus_int32 fec)
-{
+int bridge_encoder_set_inband_fec(OpusEncoder *st, opus_int32 fec) {
 	return opus_encoder_ctl(st, OPUS_SET_INBAND_FEC(fec));
 }
 
-int
-bridge_encoder_get_inband_fec(OpusEncoder *st, opus_int32 *fec)
-{
+int bridge_encoder_get_inband_fec(OpusEncoder *st, opus_int32 *fec) {
 	return opus_encoder_ctl(st, OPUS_GET_INBAND_FEC(fec));
 }
 
-int
-bridge_encoder_set_packet_loss_perc(OpusEncoder *st, opus_int32 loss_perc)
-{
+int bridge_encoder_set_packet_loss_perc(OpusEncoder *st, opus_int32 loss_perc) {
 	return opus_encoder_ctl(st, OPUS_SET_PACKET_LOSS_PERC(loss_perc));
 }
 
-int
-bridge_encoder_get_packet_loss_perc(OpusEncoder *st, opus_int32 *loss_perc)
-{
+int bridge_encoder_get_packet_loss_perc(OpusEncoder *st, opus_int32 *loss_perc) {
 	return opus_encoder_ctl(st, OPUS_GET_PACKET_LOSS_PERC(loss_perc));
+}
+
+int bridge_encoder_set_force_channel(OpusEncoder *st, size_t num_channels) {
+  if (num_channels == 0) {
+    return opus_encoder_ctl(st, OPUS_SET_FORCE_CHANNELS(OPUS_AUTO));
+  } else if (num_channels == 1 || num_channels == 2) {
+    return opus_encoder_ctl(st, OPUS_SET_FORCE_CHANNELS(num_channels));
+  } else {
+    return -1;
+  }
 }
 
 */
@@ -304,6 +307,23 @@ func (enc *Encoder) Complexity() (int, error) {
 		return 0, Error(res)
 	}
 	return int(complexity), nil
+}
+
+func (enc *Encoder) SetBandwidth(bandwidth Bandwidth) error {
+	res := C.bridge_encoder_set_bandwidth(enc.p, C.opus_int32(bandwidth))
+	if res != C.OPUS_OK {
+		return Error(res)
+	}
+	return nil
+}
+
+func (enc *Encoder) Bandwidth() (Bandwidth, error) {
+	var bandwidth C.opus_int32
+	res := C.bridge_encoder_get_bandwidth(enc.p, &bandwidth)
+	if res != C.OPUS_OK {
+		return 0, Error(res)
+	}
+	return Bandwidth(bandwidth), nil
 }
 
 // SetMaxBandwidth configures the maximum bandpass that the encoder will select
