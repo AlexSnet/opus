@@ -5,6 +5,7 @@
 package opus
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -23,6 +24,32 @@ func TestOpusErrstr(t *testing.T) {
 		t.Errorf("Expected \"invalid argument\" error message for error code %d: %v",
 			ErrBadArg, ErrBadArg)
 	}
+}
+
+func TestOpusFrame(t *testing.T) {
+	// Create bogus input sound
+	const G4 = 391.995
+	const SAMPLE_RATE = 48000
+	const FRAME_SIZE_MS = 60
+	const FRAME_SIZE = SAMPLE_RATE * FRAME_SIZE_MS / 1000
+
+	pcm := make([]int16, FRAME_SIZE)
+	addSine(pcm, SAMPLE_RATE, G4)
+	enc, err := NewEncoder(SAMPLE_RATE, 1, AppVoIP)
+	if err != nil || enc == nil {
+		t.Fatalf("Error creating new encoder: %v", err)
+	}
+	data := make([]byte, 1000)
+	n, err := enc.Encode(pcm, data)
+	if err != nil {
+		t.Fatalf("Couldn't encode data: %v", err)
+	}
+	data = data[:n]
+
+	fType := GetFrameType(data)
+	pMode := GetPacketMode(data)
+
+	fmt.Printf("frame %s,%d\n", fType, pMode)
 }
 
 func TestCodec(t *testing.T) {
