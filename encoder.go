@@ -13,24 +13,36 @@ import (
 #cgo pkg-config: opus
 #include <opus.h>
 
-int bridge_encoder_set_dtx(OpusEncoder *st, opus_int32 use_dtx) {
+int bridge_encoder_set_dtx(OpusEncoder *st, int use_dtx) {
 	return opus_encoder_ctl(st, OPUS_SET_DTX(use_dtx));
 }
 
-int bridge_encoder_get_dtx(OpusEncoder *st, opus_int32 *dtx) {
+int bridge_encoder_get_dtx(OpusEncoder *st, int *dtx) {
 	return opus_encoder_ctl(st, OPUS_GET_DTX(dtx));
 }
 
-int bridge_encoder_enable_cbr(OpusEncoder *st) {
-    return opus_encoder_ctl(st, OPUS_SET_VBR(0));
+int bridge_encoder_set_vbr(OpusEncoder *st, int enable_vbr) {
+	return opus_encoder_ctl(st, OPUS_SET_VBR(enable_vbr));
 }
 
-int bridge_encoder_disable_cbr(OpusEncoder *st) {
-    return opus_encoder_ctl(st, OPUS_SET_VBR(1));
-}
-
-int bridge_encoder_get_vbr(OpusEncoder *st, opus_int32 *vbr) {
+int bridge_encoder_get_vbr(OpusEncoder *st, int *vbr) {
 	return opus_encoder_ctl(st, OPUS_GET_VBR(vbr));
+}
+
+int bridge_encoder_set_vbr_constraint(OpusEncoder *st, int vbr_constraint) {
+	return opus_encoder_ctl(st, OPUS_SET_VBR_CONSTRAINT(vbr_constraint));
+}
+
+int bridge_encoder_get_vbr_constraint(OpusEncoder *st, int *vbr_constraint) {
+	return opus_encoder_ctl(st, OPUS_GET_VBR_CONSTRAINT(vbr_constraint));
+}
+
+int bridge_encoder_set_signal(OpusEncoder *st, int signal_type) {
+	return opus_encoder_ctl(st, OPUS_SET_SIGNAL(signal_type));
+}
+
+int bridge_encoder_get_signal(OpusEncoder *st, int *signal_type) {
+	return opus_encoder_ctl(st, OPUS_GET_SIGNAL(signal_type));
 }
 
 int bridge_encoder_get_sample_rate(OpusEncoder *st, opus_int32 *sample_rate) {
@@ -45,43 +57,43 @@ int bridge_encoder_get_bitrate(OpusEncoder *st, opus_int32 *bitrate) {
 	return opus_encoder_ctl(st, OPUS_GET_BITRATE(bitrate));
 }
 
-int bridge_encoder_set_complexity(OpusEncoder *st, opus_int32 complexity) {
+int bridge_encoder_set_complexity(OpusEncoder *st, int complexity) {
 	return opus_encoder_ctl(st, OPUS_SET_COMPLEXITY(complexity));
 }
 
-int bridge_encoder_get_complexity(OpusEncoder *st, opus_int32 *complexity) {
+int bridge_encoder_get_complexity(OpusEncoder *st, int *complexity) {
 	return opus_encoder_ctl(st, OPUS_GET_COMPLEXITY(complexity));
 }
 
-int bridge_encoder_set_bandwidth(OpusEncoder *st, opus_int32 bandwidth) {
+int bridge_encoder_set_bandwidth(OpusEncoder *st, int bandwidth) {
 	return opus_encoder_ctl(st, OPUS_SET_BANDWIDTH(bandwidth));
 }
 
-int bridge_encoder_get_bandwidth(OpusEncoder *st, opus_int32 *bandwidth) {
+int bridge_encoder_get_bandwidth(OpusEncoder *st, int *bandwidth) {
 	return opus_encoder_ctl(st, OPUS_GET_BANDWIDTH(bandwidth));
 }
 
-int bridge_encoder_set_max_bandwidth(OpusEncoder *st, opus_int32 max_bw) {
+int bridge_encoder_set_max_bandwidth(OpusEncoder *st, int max_bw) {
 	return opus_encoder_ctl(st, OPUS_SET_MAX_BANDWIDTH(max_bw));
 }
 
-int bridge_encoder_get_max_bandwidth(OpusEncoder *st, opus_int32 *max_bw) {
+int bridge_encoder_get_max_bandwidth(OpusEncoder *st, int *max_bw) {
 	return opus_encoder_ctl(st, OPUS_GET_MAX_BANDWIDTH(max_bw));
 }
 
-int bridge_encoder_set_inband_fec(OpusEncoder *st, opus_int32 fec) {
+int bridge_encoder_set_inband_fec(OpusEncoder *st, int fec) {
 	return opus_encoder_ctl(st, OPUS_SET_INBAND_FEC(fec));
 }
 
-int bridge_encoder_get_inband_fec(OpusEncoder *st, opus_int32 *fec) {
+int bridge_encoder_get_inband_fec(OpusEncoder *st, int *fec) {
 	return opus_encoder_ctl(st, OPUS_GET_INBAND_FEC(fec));
 }
 
-int bridge_encoder_set_packet_loss_perc(OpusEncoder *st, opus_int32 loss_perc) {
+int bridge_encoder_set_packet_loss_perc(OpusEncoder *st, int loss_perc) {
 	return opus_encoder_ctl(st, OPUS_SET_PACKET_LOSS_PERC(loss_perc));
 }
 
-int bridge_encoder_get_packet_loss_perc(OpusEncoder *st, opus_int32 *loss_perc) {
+int bridge_encoder_get_packet_loss_perc(OpusEncoder *st, int *loss_perc) {
 	return opus_encoder_ctl(st, OPUS_GET_PACKET_LOSS_PERC(loss_perc));
 }
 
@@ -224,7 +236,7 @@ func (enc *Encoder) SetDTX(dtx bool) error {
 	if dtx {
 		i = 1
 	}
-	res := C.bridge_encoder_set_dtx(enc.p, C.opus_int32(i))
+	res := C.bridge_encoder_set_dtx(enc.p, C.int(i))
 	if res != C.OPUS_OK {
 		return Error(res)
 	}
@@ -234,12 +246,75 @@ func (enc *Encoder) SetDTX(dtx bool) error {
 // DTX reports whether this encoder is configured to use discontinuous
 // transmission (DTX).
 func (enc *Encoder) DTX() (bool, error) {
-	var dtx C.opus_int32
+	var dtx C.int
 	res := C.bridge_encoder_get_dtx(enc.p, &dtx)
 	if res != C.OPUS_OK {
 		return false, Error(res)
 	}
 	return dtx != 0, nil
+}
+
+func (enc *Encoder) SetVBR(vbr bool) error {
+	i := 0
+	if vbr {
+		i = 1
+	}
+	res := C.bridge_encoder_set_vbr(enc.p, C.int(i))
+	if res != C.OPUS_OK {
+		return Error(res)
+	}
+	return nil
+}
+
+func (enc *Encoder) VBR() (bool, error) {
+	var vbr C.int
+	res := C.bridge_encoder_get_vbr(enc.p, &vbr)
+	if res != C.OPUS_OK {
+		return false, Error(res)
+	}
+	return vbr != 0, nil
+}
+
+func (enc *Encoder) SetVBRConstraint(vbrConstraint bool) error {
+	i := 0
+	if vbrConstraint {
+		i = 1
+	}
+	res := C.bridge_encoder_set_vbr_constraint(enc.p, C.int(i))
+	if res != C.OPUS_OK {
+		return Error(res)
+	}
+	return nil
+}
+
+func (enc *Encoder) VBRConstraint() (bool, error) {
+	var vbrConstraint C.int
+	res := C.bridge_encoder_get_vbr_constraint(enc.p, &vbrConstraint)
+	if res != C.OPUS_OK {
+		return false, Error(res)
+	}
+	return vbrConstraint != 0, nil
+}
+
+func (enc *Encoder) SetSignalType(signal bool) error {
+	i := 0
+	if signal {
+		i = 1
+	}
+	res := C.bridge_encoder_set_signal(enc.p, C.int(i))
+	if res != C.OPUS_OK {
+		return Error(res)
+	}
+	return nil
+}
+
+func (enc *Encoder) SignalType() (bool, error) {
+	var signal C.int
+	res := C.bridge_encoder_get_signal(enc.p, &signal)
+	if res != C.OPUS_OK {
+		return false, Error(res)
+	}
+	return signal != 0, nil
 }
 
 // SampleRate returns the encoder sample rate in Hz.
@@ -282,7 +357,7 @@ func (enc *Encoder) SetBitrateToMax() error {
 
 // Bitrate returns the bitrate of the Encoder
 func (enc *Encoder) Bitrate() (int, error) {
-	var bitrate C.opus_int32
+	var bitrate C.int
 	res := C.bridge_encoder_get_bitrate(enc.p, &bitrate)
 	if res != C.OPUS_OK {
 		return 0, Error(res)
@@ -292,7 +367,7 @@ func (enc *Encoder) Bitrate() (int, error) {
 
 // SetComplexity sets the encoder's computational complexity
 func (enc *Encoder) SetComplexity(complexity int) error {
-	res := C.bridge_encoder_set_complexity(enc.p, C.opus_int32(complexity))
+	res := C.bridge_encoder_set_complexity(enc.p, C.int(complexity))
 	if res != C.OPUS_OK {
 		return Error(res)
 	}
@@ -310,7 +385,7 @@ func (enc *Encoder) Complexity() (int, error) {
 }
 
 func (enc *Encoder) SetBandwidth(bandwidth Bandwidth) error {
-	res := C.bridge_encoder_set_bandwidth(enc.p, C.opus_int32(bandwidth))
+	res := C.bridge_encoder_set_bandwidth(enc.p, C.int(bandwidth))
 	if res != C.OPUS_OK {
 		return Error(res)
 	}
@@ -318,7 +393,7 @@ func (enc *Encoder) SetBandwidth(bandwidth Bandwidth) error {
 }
 
 func (enc *Encoder) Bandwidth() (Bandwidth, error) {
-	var bandwidth C.opus_int32
+	var bandwidth C.int
 	res := C.bridge_encoder_get_bandwidth(enc.p, &bandwidth)
 	if res != C.OPUS_OK {
 		return 0, Error(res)
@@ -329,7 +404,7 @@ func (enc *Encoder) Bandwidth() (Bandwidth, error) {
 // SetMaxBandwidth configures the maximum bandpass that the encoder will select
 // automatically
 func (enc *Encoder) SetMaxBandwidth(maxBw Bandwidth) error {
-	res := C.bridge_encoder_set_max_bandwidth(enc.p, C.opus_int32(maxBw))
+	res := C.bridge_encoder_set_max_bandwidth(enc.p, C.int(maxBw))
 	if res != C.OPUS_OK {
 		return Error(res)
 	}
@@ -338,7 +413,7 @@ func (enc *Encoder) SetMaxBandwidth(maxBw Bandwidth) error {
 
 // MaxBandwidth gets the encoder's configured maximum allowed bandpass.
 func (enc *Encoder) MaxBandwidth() (Bandwidth, error) {
-	var maxBw C.opus_int32
+	var maxBw C.int
 	res := C.bridge_encoder_get_max_bandwidth(enc.p, &maxBw)
 	if res != C.OPUS_OK {
 		return 0, Error(res)
@@ -353,7 +428,7 @@ func (enc *Encoder) SetInBandFEC(fec bool) error {
 	if fec {
 		i = 1
 	}
-	res := C.bridge_encoder_set_inband_fec(enc.p, C.opus_int32(i))
+	res := C.bridge_encoder_set_inband_fec(enc.p, C.int(i))
 	if res != C.OPUS_OK {
 		return Error(res)
 	}
@@ -362,7 +437,7 @@ func (enc *Encoder) SetInBandFEC(fec bool) error {
 
 // InBandFEC gets the encoder's configured inband forward error correction (FEC)
 func (enc *Encoder) InBandFEC() (bool, error) {
-	var fec C.opus_int32
+	var fec C.int
 	res := C.bridge_encoder_get_inband_fec(enc.p, &fec)
 	if res != C.OPUS_OK {
 		return false, Error(res)
@@ -372,7 +447,7 @@ func (enc *Encoder) InBandFEC() (bool, error) {
 
 // SetPacketLossPerc configures the encoder's expected packet loss percentage.
 func (enc *Encoder) SetPacketLossPerc(lossPerc int) error {
-	res := C.bridge_encoder_set_packet_loss_perc(enc.p, C.opus_int32(lossPerc))
+	res := C.bridge_encoder_set_packet_loss_perc(enc.p, C.int(lossPerc))
 	if res != C.OPUS_OK {
 		return Error(res)
 	}
@@ -381,7 +456,7 @@ func (enc *Encoder) SetPacketLossPerc(lossPerc int) error {
 
 // PacketLossPerc gets the encoder's configured packet loss percentage.
 func (enc *Encoder) PacketLossPerc() (int, error) {
-	var lossPerc C.opus_int32
+	var lossPerc C.int
 	res := C.bridge_encoder_get_packet_loss_perc(enc.p, &lossPerc)
 	if res != C.OPUS_OK {
 		return 0, Error(res)
