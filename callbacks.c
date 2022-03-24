@@ -22,8 +22,7 @@ static struct OpusFileCallbacks callbacks = {
 // value. This is legal C, but go test -race (-d=checkptr) complains anyway. So
 // we have this wrapper function to shush it.
 // https://groups.google.com/g/golang-nuts/c/995uZyRPKlU
-OggOpusFile *
-my_open_callbacks(uintptr_t p, int *error)
+OggOpusFile * my_open_callbacks(uintptr_t p, int *error)
 {
     return op_open_callbacks((void *)p, &callbacks, NULL, 0, error);
 }
