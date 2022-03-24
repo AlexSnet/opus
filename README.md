@@ -20,7 +20,7 @@ xiph.org opus libs:
 ### Import
 
 ```go
-import "gopkg.in/hraban/opus.v2"
+import "github.com/alexsnet/opus"
 ```
 
 ### Encoding
